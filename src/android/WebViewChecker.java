@@ -39,14 +39,15 @@ public class WebViewChecker extends CordovaPlugin {
   }
 
   @Override
+  public void onResume(boolean multitasking) {
+    super.onResume(multitasking);
+    checkWebViewVersionAndShowDialog();
+  }
+
+  @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
-    MINIMAL_STABLE_VERSION = preferences.getInteger("WebViewMinVersion", MINIMAL_STABLE_VERSION);
-    dialog = new com.nonameprovided.cordova.WebViewChecker.WebViewDialogFragment();
-    int currentWebViewVersion = getCurrentWebViewVersion(cordova);
-    if (currentWebViewVersion < MINIMAL_STABLE_VERSION && !isDialogVisible) {
-      openWebViewWarning();
-    }
+    checkWebViewVersionAndShowDialog();
   }
 
   @Override
@@ -247,5 +248,14 @@ public class WebViewChecker extends CordovaPlugin {
       result = Integer.parseInt(matcher.group(1));
     }
     return result;
+  }
+
+  private void checkWebViewVersionAndShowDialog() {
+    MINIMAL_STABLE_VERSION = preferences.getInteger("WebViewMinVersion", MINIMAL_STABLE_VERSION);
+    dialog = new com.nonameprovided.cordova.WebViewChecker.WebViewDialogFragment();
+    int currentWebViewVersion = getCurrentWebViewVersion(cordova);
+    if (currentWebViewVersion < MINIMAL_STABLE_VERSION && !isDialogVisible) {
+      openWebViewWarning();
+    }
   }
 }
