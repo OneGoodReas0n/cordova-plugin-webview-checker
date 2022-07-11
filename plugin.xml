@@ -15,5 +15,6 @@
       </feature>
   </config-file>
   <source-file src="src/android/WebViewChecker.java" target-dir="src/com/nonameprovided/cordova/plugin" />
+  <source-file src="src/android/WebViewDialogFragment.java" target-dir="src/com/nonameprovided/cordova/plugin" />
 </platform>
 </plugin>
