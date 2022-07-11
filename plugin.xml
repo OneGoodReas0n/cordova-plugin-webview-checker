@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="cordova-plugin-webview-checker" version="1.0.1">
-<name>Android Webview Checker</name>
-<description>Checks whether Android System Webview is enabled or not.</description>
-<license>MIT</license>
-<author>Attila Olah</author>
-<keywords>android,system,webview,checker</keywords>
-<js-module src="www/webview-checker.js" name="webViewChecker">
-  <clobbers target="plugins.webViewChecker" />
-</js-module>
-<platform name="android">
-  <config-file target="config.xml" parent="/*">
+<plugin id="cordova-plugin-webview-checker" version="1.0.1"
+  xmlns="http://apache.org/cordova/ns/plugins/1.0">
+  <name>Android Webview Checker</name>
+  <description>Checks whether Android System Webview is enabled or not.</description>
+  <license>MIT</license>
+  <author>Attila Olah</author>
+  <keywords>android,system,webview,checker</keywords>
+  <js-module name="webViewChecker" src="www/webview-checker.js">
+    <clobbers target="plugins.webViewChecker" />
+  </js-module>
+  <platform name="android">
+    <config-file parent="/*" target="config.xml">
       <feature name="WebViewChecker">
-          <param name="android-package" value="com.nonameprovided.cordova.WebViewChecker.WebViewChecker"/>
+        <param name="android-package"
+          value="com.nonameprovided.cordova.WebViewChecker.WebViewChecker" />
+        <param name="onload" value="true" />
       </feature>
-  </config-file>
-  <source-file src="src/android/WebViewChecker.java" target-dir="src/com/nonameprovided/cordova/plugin" />
-  <source-file src="src/android/WebViewDialogFragment.java" target-dir="src/com/nonameprovided/cordova/plugin" />
-</platform>
+    </config-file>
+    <source-file src="src/android/WebViewChecker.java"
+      target-dir="src/com/nonameprovided/cordova/plugin" />
+    <source-file src="src/android/WebViewDialogFragment.java"
+      target-dir="src/com/nonameprovided/cordova/plugin" />
+  </platform>
 </plugin>
