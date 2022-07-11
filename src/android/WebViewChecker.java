@@ -1,8 +1,10 @@
 package com.nonameprovided.cordova.WebViewChecker;
 
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 
+import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,13 +18,15 @@ import android.net.Uri;
 import android.webkit.WebView;
 
 import java.lang.reflect.Method;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class echoes a string called from JavaScript.
  */
 public class WebViewChecker extends CordovaPlugin {
 
-  WebViewDialogFragment dialog;
+  com.nonameprovided.cordova.WebViewChecker.WebViewDialogFragment dialog;
   int MINIMAL_STABLE_VERSION = 60;
   boolean isDialogVisible = false;
 
@@ -37,8 +41,8 @@ public class WebViewChecker extends CordovaPlugin {
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
-    MINIMAL_STABLE_VERSION = preferences.getInteger("WebViewMinVersion");
-    dialog = new WebViewDialogFragment();
+    MINIMAL_STABLE_VERSION = preferences.getInteger("WebViewMinVersion", MINIMAL_STABLE_VERSION);
+    dialog = new com.nonameprovided.cordova.WebViewChecker.WebViewDialogFragment();
     int currentWebViewVersion = getCurrentWebViewVersion(cordova);
     if (currentWebViewVersion < MINIMAL_STABLE_VERSION && !isDialogVisible) {
       openWebViewWarning();
@@ -78,18 +82,15 @@ public class WebViewChecker extends CordovaPlugin {
     return false;
   }
 
-  public void getCurrentWebViewVersion(CordovaInterface cordova, CallbackContext callback) {
-    PackageInfo info = this.getCurrentWebViewPackageInfo();
+  public int getCurrentWebViewVersion(CordovaInterface cordova) {
+    PackageInfo info = this.getCurrentWebViewPackage();
     if (info != null) {
-      callback.success(parseVersionFromPackage(info));
+      return parseVersionFromPackage(info);
     }
-    callback.success(getWebViewVersionFromUserAgent(cordova));
+    return getWebViewVersionFromUserAgent(cordova);
   }
 
-  /**
-   * Returns information about the currently selected WebView engine.
-   */
-  public PackageInfo getCurrentWebViewPackageInfo() throws org.json.JSONException {
+  public PackageInfo getCurrentWebViewPackage() {
     PackageInfo pInfo = null;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       System.out.println("getCurrentWebViewPackageInfo for O+");
@@ -109,18 +110,18 @@ public class WebViewChecker extends CordovaPlugin {
           Class webViewFactory = Class.forName("com.google.android.webview.WebViewFactory");
           Method method = webViewFactory.getMethod("getLoadedPackageInfo");
           pInfo = (PackageInfo) method.invoke(null);
+          if (pInfo == null) {
+            try {
+              System.out.println("getCurrentWebViewPackageInfo for M+ (3)");
+              Class anotherWebViewFactory = Class.forName("com.android.webview.WebViewFactory");
+              Method anotherMethod = anotherWebViewFactory.getMethod("getLoadedPackageInfo");
+              pInfo = (PackageInfo) anotherMethod.invoke(null);
+            } catch (Exception e2) {
+              System.out.println("getCurrentWebViewPackageInfo for M+ (3) ex=" + e2);
+            }
+          }
         } catch (Exception e2) {
           System.out.println("getCurrentWebViewPackageInfo for M+ (2) ex=" + e2);
-        }
-      }
-      if (pInfo == null) {
-        try {
-          System.out.println("getCurrentWebViewPackageInfo for M+ (3)");
-          Class webViewFactory = Class.forName("com.android.webview.WebViewFactory");
-          Method method = webViewFactory.getMethod("getLoadedPackageInfo");
-          pInfo = (PackageInfo) method.invoke(null);
-        } catch (Exception e2) {
-          System.out.println("getCurrentWebViewPackageInfo for M+ (3) ex=" + e2);
         }
       }
     } else {
@@ -130,6 +131,45 @@ public class WebViewChecker extends CordovaPlugin {
       System.out.println("getCurrentWebViewPackageInfo pInfo set");
     }
     return pInfo;
+  }
+
+  public void getCurrentWebViewPackageInfo(CallbackContext callbackContext) throws org.json.JSONException {
+    PackageInfo pInfo = null;
+    JSONObject responseObject = new JSONObject();
+
+    try {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        /* Starting with Android O (API 26) they added a new method specific for this */
+        pInfo = WebView.getCurrentWebViewPackage();
+      } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        /**
+         * With Android Lollipop (API 21) they started to update the WebView
+         * as a separate APK with the PlayStore and they added the
+         * getLoadedPackageInfo() method to the WebViewFactory class and this
+         * should handle the Android 7.0 behaviour changes too.
+         */
+        Class webViewFactory = Class.forName("android.webkit.WebViewFactory");
+        Method method = webViewFactory.getMethod("getLoadedPackageInfo");
+        pInfo = (PackageInfo) method.invoke(null);
+      } else {
+        /* Before Lollipop the WebView was bundled with the OS. */
+        this.getAppPackageInfo("com.google.android.webview", callbackContext);
+
+        /* The getAppPackageInfo function resolves the callbackContext
+         * and returns the same response, so we need to return here.
+         */
+        return;
+      }
+
+      responseObject.put("packageName", pInfo.packageName);
+      responseObject.put("versionName", pInfo.versionName);
+      responseObject.put("versionCode", pInfo.versionCode);
+
+      callbackContext.success(responseObject);
+    } catch (Exception e) {
+      callbackContext.error("Cannot determine current WebView engine. (" + e.getMessage() + ")");
+      return;
+    }
   }
 
   /**
