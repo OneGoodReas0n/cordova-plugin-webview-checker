@@ -39,12 +39,6 @@ public class WebViewChecker extends CordovaPlugin {
   }
 
   @Override
-  public void onResume(boolean multitasking) {
-    super.onResume(multitasking);
-    checkWebViewVersionAndShowDialog();
-  }
-
-  @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
     checkWebViewVersionAndShowDialog();
