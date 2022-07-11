@@ -37,7 +37,7 @@ public class WebViewChecker extends CordovaPlugin {
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
-    MINIMAL_STABLE_VERSION = preferences.getInteger("WebViewMinVersion")
+    MINIMAL_STABLE_VERSION = preferences.getInteger("WebViewMinVersion");
     dialog = new WebViewDialogFragment();
     int currentWebViewVersion = getCurrentWebViewVersion(cordova);
     if (currentWebViewVersion < MINIMAL_STABLE_VERSION && !isDialogVisible) {
