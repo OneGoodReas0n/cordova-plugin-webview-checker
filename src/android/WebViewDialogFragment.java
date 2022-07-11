@@ -34,8 +34,8 @@ public class WebViewDialogFragment extends DialogFragment {
         }
       });
     final Dialog dialog = builder.create();
-    dialog.setCanceledOnTouchOutside(true);
-    dialog.setCancelable(true);
+    dialog.setCanceledOnTouchOutside(false);
+    dialog.setCancelable(false);
     return dialog;
   }
 }
