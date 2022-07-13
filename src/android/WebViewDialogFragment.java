@@ -30,7 +30,7 @@ public class WebViewDialogFragment extends DialogFragment {
       .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialogInterface, int i) {
-          getActivity().finishAffinity();
+          dismiss();
         }
       });
     final Dialog dialog = builder.create();
