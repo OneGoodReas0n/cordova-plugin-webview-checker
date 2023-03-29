@@ -255,7 +255,7 @@ public class WebViewChecker extends CordovaPlugin {
   private void checkWebviewVersionAndCallAlert() {
     PackageInfo info = this.getCurrentWebViewPackage();
     int currentWebViewVersion = getCurrentWebViewVersion(cordova);
-    if (currentWebViewVersion < MINIMAL_STABLE_VERSION && !info.packageName.includes("huawei") &&
+    if (currentWebViewVersion < MINIMAL_STABLE_VERSION && !info.packageName.contains("huawei") &&
       !isDialogVisible) {
       openWebViewWarning();
     }
