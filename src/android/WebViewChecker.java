@@ -41,10 +41,7 @@ public class WebViewChecker extends CordovaPlugin {
   @Override
   public void onResume(boolean multitasking) {
     super.onResume(multitasking);
-    int currentWebViewVersion = getCurrentWebViewVersion(cordova);
-    if (currentWebViewVersion < MINIMAL_STABLE_VERSION && !isDialogVisible) {
-      openWebViewWarning();
-    }
+    this.checkWebviewVersionAndCallAlert();
   }
 
   @Override
@@ -52,10 +49,7 @@ public class WebViewChecker extends CordovaPlugin {
     super.initialize(cordova, webView);
     MINIMAL_STABLE_VERSION = preferences.getInteger("WebViewMinVersion", MINIMAL_STABLE_VERSION);
     dialog = new com.nonameprovided.cordova.WebViewChecker.WebViewDialogFragment();
-    int currentWebViewVersion = getCurrentWebViewVersion(cordova);
-    if (currentWebViewVersion < MINIMAL_STABLE_VERSION && !isDialogVisible) {
-      openWebViewWarning();
-    }
+    this.checkWebviewVersionAndCallAlert();
   }
 
   @Override
@@ -256,5 +250,14 @@ public class WebViewChecker extends CordovaPlugin {
       result = Integer.parseInt(matcher.group(1));
     }
     return result;
+  }
+
+  private void checkWebviewVersionAndCallAlert() {
+    PackageInfo info = this.getCurrentWebViewPackage();
+    int currentWebViewVersion = getCurrentWebViewVersion(cordova);
+    if (currentWebViewVersion < MINIMAL_STABLE_VERSION && !info.packageName.includes("huawei") &&
+      !isDialogVisible) {
+      openWebViewWarning();
+    }
   }
 }
